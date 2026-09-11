@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>汉字练习 · Treino de Ideogramas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="app-header">
+  <div class="brand">
+    <svg class="seal" viewBox="0 0 100 100" aria-hidden="true">
+      <rect x="6" y="6" width="88" height="88" rx="4"></rect>
+      <text x="50" y="63" text-anchor="middle">字</text>
+    </svg>
+    <div class="brand-text">
+      <h1>汉字练习</h1>
+      <p>Treino de ideogramas chineses</p>
+    </div>
+  </div>
+  <nav class="tabs" role="tablist" aria-label="Seções">
+    <button class="tab-btn is-active" data-view="quiz" role="tab" aria-selected="true">Quiz</button>
+    <button class="tab-btn" data-view="data" role="tab" aria-selected="false">Dados</button>
+    <button class="tab-btn" data-view="stats" role="tab" aria-selected="false">Estatísticas</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- ===================== QUIZ VIEW ===================== -->
+  <section id="view-quiz" class="view is-active">
+
+    <div id="quiz-empty" class="empty-state" hidden>
+      <p>Você ainda não tem nenhuma palavra cadastrada.</p>
+      <button class="btn btn-primary" data-goto="data">Importar CSV</button>
+    </div>
+
+    <div id="quiz-body" hidden>
+      <div class="quiz-controls">
+        <div class="mode-switch" role="radiogroup" aria-label="Modo do quiz">
+          <button class="mode-btn is-active" data-mode="all" role="radio" aria-checked="true">Todas as palavras</button>
+          <button class="mode-btn" data-mode="errors" role="radio" aria-checked="false">Só as que erro mais</button>
+        </div>
+        <div class="score-line">
+          <span class="score-pill"><strong id="score-correct">0</strong>/<span id="score-total">0</span></span>
+          <span class="streak-pill">sequência <strong id="streak-count">0</strong></span>
+        </div>
+      </div>
+
+      <div class="quiz-card">
+        <p class="prompt-label" id="prompt-label">Ideograma</p>
+        <p class="prompt-display" id="prompt-display" lang="zh">你好</p>
+
+        <p class="answer-label" id="answer-label">Escolha a pronúncia</p>
+        <div class="options" id="options" role="group" aria-label="Opções de resposta"></div>
+
+        <div class="feedback" id="feedback" aria-live="polite"></div>
+      </div>
+
+      <div class="quiz-footer">
+        <button class="btn btn-ghost" id="skip-btn">Pular</button>
+        <button class="btn btn-primary" id="next-btn">Próxima palavra</button>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ===================== DATA VIEW ===================== -->
+  <section id="view-data" class="view">
+
+    <div class="panel">
+      <h2>Importar / atualizar CSV</h2>
+      <p class="hint">O arquivo precisa ter três colunas, nesta ordem: <strong>ideograma, pronúncia (pinyin), tradução em português</strong>. A primeira linha pode ser um cabeçalho — ela é detectada automaticamente.</p>
+
+      <div class="import-row">
+        <label class="file-drop" for="csv-file">
+          <span id="file-drop-label">Escolher arquivo .csv</span>
+          <input type="file" id="csv-file" accept=".csv,text/csv" hidden>
+        </label>
+        <a class="btn btn-ghost" id="sample-link" href="sample.csv" download>Baixar modelo de exemplo</a>
+      </div>
+
+      <details class="paste-details">
+        <summary>Ou colar o conteúdo do CSV diretamente</summary>
+        <textarea id="csv-paste" rows="6" placeholder="你好,nǐ hǎo,olá&#10;谢谢,xièxiè,obrigado"></textarea>
+        <button class="btn btn-ghost" id="paste-import-btn">Importar deste texto</button>
+      </details>
+
+      <div class="import-mode">
+        <span>Ao importar:</span>
+        <label><input type="radio" name="import-mode" value="merge" checked> mesclar (atualiza quem já existe, adiciona o resto)</label>
+        <label><input type="radio" name="import-mode" value="replace"> substituir tudo</label>
+      </div>
+
+      <p class="import-result" id="import-result" aria-live="polite"></p>
+    </div>
+
+    <div class="panel">
+      <div class="panel-heading-row">
+        <h2>Palavras cadastradas (<span id="word-count">0</span>)</h2>
+        <div class="panel-actions">
+          <button class="btn btn-ghost" id="add-row-btn">+ Adicionar palavra</button>
+          <button class="btn btn-ghost" id="export-btn">Exportar CSV</button>
+          <button class="btn btn-danger" id="clear-all-btn">Apagar tudo</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table id="data-table">
+          <thead>
+            <tr>
+              <th>Ideograma</th>
+              <th>Pronúncia</th>
+              <th>Tradução</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="data-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ===================== STATS VIEW ===================== -->
+  <section id="view-stats" class="view">
+    <div class="panel">
+      <h2>Desempenho geral</h2>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <p class="stat-number" id="stat-total-words">0</p>
+          <p class="stat-label">palavras cadastradas</p>
+        </div>
+        <div class="stat-box">
+          <p class="stat-number" id="stat-total-answers">0</p>
+          <p class="stat-label">respostas dadas</p>
+        </div>
+        <div class="stat-box">
+          <p class="stat-number" id="stat-accuracy">—</p>
+          <p class="stat-label">acerto geral</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-heading-row">
+        <h2>Palavras com mais dificuldade</h2>
+        <button class="btn btn-ghost" id="reset-stats-btn">Zerar estatísticas</button>
+      </div>
+      <div class="table-wrap">
+        <table id="stats-table">
+          <thead>
+            <tr>
+              <th>Ideograma</th>
+              <th>Pronúncia</th>
+              <th>Tradução</th>
+              <th>Acertos</th>
+              <th>Erros</th>
+            </tr>
+          </thead>
+          <tbody id="stats-tbody"></tbody>
+        </table>
+      </div>
+      <p class="hint" id="stats-empty-hint" hidden>Ainda não há respostas registradas. Responda algumas perguntas no Quiz para ver os dados aqui.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="app-footer">
+  <p>Os dados ficam salvos apenas neste navegador (localStorage). Use "Exportar CSV" de vez em quando para ter uma cópia de segurança.</p>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>

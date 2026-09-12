@@ -233,10 +233,17 @@
     if (quizPool.length === 0) refillPool();
     const word = quizPool.pop();
 
-    const fields = ["hanzi", "pinyin", "pt"];
-    const promptField = fields[Math.floor(Math.random() * 3)];
-    const remaining = fields.filter((f) => f !== promptField);
-    const answerField = remaining[Math.floor(Math.random() * remaining.length)];
+    // O ideograma precisa estar sempre presente: ou como pergunta, ou como
+    // resposta. Por isso só sorteamos entre estas 4 combinações válidas
+    // (nunca pinyin <-> tradução, que deixaria o ideograma de fora).
+    const PROMPT_ANSWER_PAIRS = [
+      ["hanzi", "pinyin"],
+      ["hanzi", "pt"],
+      ["pinyin", "hanzi"],
+      ["pt", "hanzi"],
+    ];
+    const [promptField, answerField] =
+      PROMPT_ANSWER_PAIRS[Math.floor(Math.random() * PROMPT_ANSWER_PAIRS.length)];
 
     const correct = word[answerField];
 
